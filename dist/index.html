@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="initial-scale=1, user-scalable=no,maximum-scale=1,width=device-width" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="description" content="着せ替えできるチーバくんマップ。地図上に表示されたチーバくんの色を変えたり、チーバくんと実際の地図の住所を照らし合わせたりできます。">
+        <title>きせかえできるチーバくんマップ</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <div id="buttons">
+            <button type="button" class="btnctrl" id="b_legend">着せ替え<br>モード</button>
+            <button type="button" class="btnctrl" id="b_cities">市区町村<br>の境界</button>
+            <button type="button" class="btnctrl" id="b_railways">鉄道<br>駅・路線</button>
+            <button type="button" class="btnctrl" id="b_location">現在地を<br>しらべる</button>
+        </div>
+        <div id="legend" class="map-overlay top">
+            <div class="map-overlay-inner">
+                <fieldset>
+                    <label>着せ替え部分</label>
+                    <select id="layer" name="layer">
+                        <option value="hexgrid-0">からだ</option>
+                        <option value="hexgrid-1">そとがわ</option>
+                        <option value="hexgrid-3">めだま</option>
+                        <option value="hexgrid-4">はな</option>
+                        <option value="hexgrid-5">くち</option>
+                    </select>
+                </fieldset>
+                <fieldset>
+                    <label>色の選択</label>
+                    <div id="swatches"></div>
+                </fieldset>
+            </div>
+        </div>
+        <div id="icon-loader"></div>
+        <!--<script src="app/main.js"></script>-->
+        <script>
+            document.write('<script src="app/main.js?' + new Date().getTime() + '"><\/script>');
+        </script>
+    </body>
+</html>
