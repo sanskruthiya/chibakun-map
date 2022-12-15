@@ -200,7 +200,7 @@ map.on('load', function () {
             'text-field': '{city_name}',
             'text-anchor': 'top',
             'text-allow-overlap': true,
-            'text-size': 11,
+            'text-size': ['interpolate',['linear'],['zoom'],5,8,8,11,15,18],
             'text-offset': [0,0]
         },
         'paint':{
@@ -219,7 +219,7 @@ map.on('load', function () {
             'symbol-sort-key': ['get', 'oid'],
             'text-anchor': 'top',
             'text-allow-overlap': false,
-            'text-size': 10,
+            'text-size': ['interpolate',['linear'],['zoom'],5,10,8,11,15,16],
             'text-offset': [0,0]
         },
         'paint':{
