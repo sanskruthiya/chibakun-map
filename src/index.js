@@ -23,16 +23,16 @@ const map = new maplibregl.Map({
 
 const swatches = document.getElementById('swatches');
 const layer = document.getElementById('layer');
-const colors = [
+const colors_value = [
     'transparent', '#90ee90', '#32cd32', '#00bfff', '#1e90ff',
     '#fed976', '#fb9a99', '#ee82ee', '#f03b20', '#555555'
     ];
      
-colors.forEach(function (color) {
+colors_value.forEach(function (clr) {
     const swatch = document.createElement('button');
-    swatch.style.backgroundColor = color;
+    swatch.style.backgroundColor = clr;
     swatch.addEventListener('click', function () {
-    map.setPaintProperty(layer.value, 'fill-color', color);
+    map.setPaintProperty(layer.value, 'fill-color', clr);
     });
     swatches.appendChild(swatch);
 });
@@ -257,26 +257,26 @@ map.on('load', function () {
     });
 });
 
-document.getElementById('b_legend').style.backgroundColor = "#fff";
-document.getElementById('b_legend').style.color = "#555";
+document.getElementById('b_colors').style.backgroundColor = "#fff";
+document.getElementById('b_colors').style.color = "#333";
 
 document.getElementById('b_cities').style.backgroundColor = "#fff";
-document.getElementById('b_cities').style.color = "#555";
+document.getElementById('b_cities').style.color = "#333";
 
 document.getElementById('b_railways').style.backgroundColor = "#fff";
-document.getElementById('b_railways').style.color = "#555";
+document.getElementById('b_railways').style.color = "#333";
 
-document.getElementById('b_location').style.backgroundColor = "#2c7fb8";
-document.getElementById('b_location').style.color = "#fff";
+document.getElementById('b_location').style.backgroundColor = "#fff";
+document.getElementById('b_location').style.color = "#333";
 
-document.getElementById('legend').style.display ="none";
+document.getElementById('colors').style.display ="none";
 
-document.getElementById('b_legend').addEventListener('click', function () {
-    const visibility = document.getElementById('legend');
+document.getElementById('b_colors').addEventListener('click', function () {
+    const visibility = document.getElementById('colors');
     if (visibility.style.display == 'block') {
         visibility.style.display = 'none';
         this.style.backgroundColor = "#fff";
-        this.style.color = "#555"
+        this.style.color = "#333";
     }
     else {
         visibility.style.display = 'block';
@@ -291,7 +291,7 @@ document.getElementById('b_cities').addEventListener('click', function () {
         map.setLayoutProperty('cityarea', 'visibility', 'none');
         map.setLayoutProperty('admin-city', 'visibility', 'none');
         this.style.backgroundColor = "#fff";
-        this.style.color = "#555"
+        this.style.color = "#333";
     }
     else {
         map.setLayoutProperty('cityarea', 'visibility', 'visible');
@@ -308,7 +308,7 @@ document.getElementById('b_railways').addEventListener('click', function () {
         map.setLayoutProperty('railway2', 'visibility', 'none');
         map.setLayoutProperty('station', 'visibility', 'none');
         this.style.backgroundColor = "#fff";
-        this.style.color = "#555"
+        this.style.color = "#333";
     }
     else {
         map.setLayoutProperty('railway1', 'visibility', 'visible');
@@ -329,51 +329,65 @@ document.getElementById('icon-loader').style.display = 'none';
 
 let popup_loc = new maplibregl.Popup({anchor:"bottom", focusAfterOpen:false});
 let marker_loc = new maplibregl.Marker();
+let flag_loc = 0;
 
 document.getElementById('b_location').addEventListener('click', function () {
     this.setAttribute("disabled", true);
-    this.style.backgroundColor = "#fff";
-    this.style.color = "#555"
-    document.getElementById('icon-loader').style.display = 'block';
-    navigator.geolocation.getCurrentPosition(
-        (position) => {
-            marker_loc.remove();
-            popup_loc.remove();
-            document.getElementById('icon-loader').style.display = 'none';
-            this.removeAttribute("disabled");
-            this.style.backgroundColor = "#2c7fb8";
-            this.style.color = "#fff";
+    if (flag_loc > 0) {
+        marker_loc.remove();
+        popup_loc.remove();
+        this.style.backgroundColor = "#fff";
+        this.style.color = "#333";
+        flag_loc = 0;
+        this.removeAttribute("disabled");
+    }
+    else {
+        document.getElementById('icon-loader').style.display = 'block';
+        this.style.backgroundColor = "#87cefa";
+        this.style.color = "#fff";
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                marker_loc.remove();
+                popup_loc.remove();
+                document.getElementById('icon-loader').style.display = 'none';
+                this.style.backgroundColor = "#2c7fb8";
+                this.style.color = "#fff";
 
-            let c_lat = position.coords.latitude;
-            let c_lng = position.coords.longitude;
+                let c_lat = position.coords.latitude;
+                let c_lng = position.coords.longitude;
             
-            map.jumpTo({
-                center: [c_lng, c_lat],
-                zoom: init_zoom + 1,
-            });
-            
-            popup_loc.setLngLat([c_lng, c_lat]).setHTML('<p class="tipstyle02">ここだよ！</p>').addTo(map);
-            marker_loc.setLngLat([c_lng, c_lat]).addTo(map);
-        },
-        (error) => {
-            popup_loc.remove();
-            document.getElementById('icon-loader').style.display = 'none';
-            this.style.backgroundColor = "#999";
-            this.style.color = "#fff"
-            console.warn(`ERROR(${error.code}): ${error.message}`)
-            map.flyTo({
-                center: init_coord,
-                zoom: init_zoom,
-                speed: 1,
-            });
-            popup_loc.setLngLat(init_coord).setHTML('現在地が取得できませんでした').addTo(map);
-        },
-        loc_options
-    );
+                map.jumpTo({
+                    center: [c_lng, c_lat],
+                    zoom: init_zoom + 1,
+                });
+                
+                popup_loc.setLngLat([c_lng, c_lat]).setHTML('<p class="tipstyle02">ここだよ！</p>').addTo(map);
+                marker_loc.setLngLat([c_lng, c_lat]).addTo(map);
+                flag_loc = 1;
+                this.removeAttribute("disabled");
+            },
+            (error) => {
+                popup_loc.remove();
+                document.getElementById('icon-loader').style.display = 'none';
+                this.style.backgroundColor = "#999";
+                this.style.color = "#fff";
+                console.warn(`ERROR(${error.code}): ${error.message}`)
+                map.flyTo({
+                    center: init_coord,
+                    zoom: init_zoom,
+                    speed: 1,
+                });
+                popup_loc.setLngLat(init_coord).setHTML('現在地が取得できませんでした').addTo(map);
+                flag_loc = 2;
+                this.removeAttribute("disabled");
+            },
+            loc_options
+        );
+    }
 });
 
 const attCntl = new maplibregl.AttributionControl({
-    customAttribution: '当コンテンツは国土交通省の<a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">位置参照情報</a>・<a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a>、及び<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を作成者が独自に加工したものです。(<a href="https://twitter.com/Smille_feuille"> Twitter</a> | <a href="https://github.com/sanskruthiya/chibakun-map">Github</a> )',
+    customAttribution: '当コンテンツは国土交通省の<a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">位置参照情報</a>・<a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a>、及び<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を作成者が独自に加工したものです (<a href="https://twitter.com/Smille_feuille"> Twitter</a> | <a href="https://github.com/sanskruthiya/chibakun-map">Github</a> )',
     compact: true
 });
 
