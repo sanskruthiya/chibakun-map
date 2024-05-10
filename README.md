@@ -1,3 +1,5 @@
-# Chibakun Map
+# チーバくんの地図あわせマップ Chibakun Map
 
-An interactive webmap application with a fan-art of Chiba-kun.
+千葉県に住む不思議ないきもの、チーバくんの姿と千葉県の形を地図上にできるだけぴったり重ねたマップ。
+非公式ファンアートとなります。
+チーバくんと実際の地図の駅名や地名を照らし合わせたりできます。

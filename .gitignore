@@ -1,4 +1,6 @@
 node_modules/
+backup/
+dist/app/fonts/
 package-lock.json
 webpack.config.js
 .DS_Store

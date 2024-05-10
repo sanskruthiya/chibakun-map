@@ -6,40 +6,29 @@
         <meta name="viewport" content="initial-scale=1, user-scalable=no,maximum-scale=1,width=device-width" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="description" content="着せ替えできるチーバくんマップ。地図上に表示されたチーバくんの色を変えたり、チーバくんと実際の地図の駅名や地名を照らし合わせたりできます。">
-        <title>きせかえできるチーバくんマップ</title>
+        <meta name="description" content="千葉県に住む不思議ないきもの、チーバくんの姿と千葉県の形を地図上にできるだけぴったり重ねたマップ。非公式ファンアートとなります。地図上に表示されたチーバくんと駅名や地名を照らし合わせたりできます。">
+        <title>チーバくんの地図あわせマップ</title>
     </head>
     <body>
         <div id="map">
         </div>
+        <div id="map-setting" class="setting-overlay top">
+            <label class="tLabel">背景地図選択</label>
+            <select id="basemap-id" name="basemap-id" class="basemap-select"></select>
+            <hr>
+            <label class="tLabel">情報レイヤ追加</label>
+            <div id="bx-layer" class="setting-layer"></div>   
+            <hr>
+            <label class="tLabel">チーバくん透明度調整</label>
+            <div id="bx-setting" class="setting-slider"></div>
+        </div>
         <div id="buttons">
-            <button type="button" class="btnctrl" id="b_colors">色替え<br>モード</button>
-            <button type="button" class="btnctrl" id="b_cities">市区町村<br>の境界</button>
-            <button type="button" class="btnctrl" id="b_railways">鉄道<br>駅・路線</button>
-            <button type="button" class="btnctrl" id="b_location">現在地を<br>しらべる</button>
+            <button type="button" class="btnctrl" id="b_description">このマップ<br>について</button>
+            <button type="button" class="btnctrl" id="b_setting">表示設定<br>メニュー</button>
+            <button type="button" class="btnctrl" id="b_location">現在地を<br>ピン留め</button>
         </div>
-        <div id="colors" class="map-overlay top">
-            <div class="map-overlay-inner">
-                <fieldset>
-                    <label>色替え部分</label>
-                    <select id="layer" name="layer">
-                        <option value="hexgrid-0">からだ</option>
-                        <option value="hexgrid-1">そとがわ</option>
-                        <option value="hexgrid-3">めだま</option>
-                        <option value="hexgrid-4">はな</option>
-                        <option value="hexgrid-5">くち</option>
-                    </select>
-                </fieldset>
-                <fieldset>
-                    <label>色の選択</label>
-                    <div id="swatches"></div>
-                </fieldset>
-            </div>
-        </div>
+        <div id="description" class="map-overlay"></div>
         <div id="icon-loader"></div>
-        <!--<script src="app/main.js"></script>-->
-        <script>
-            document.write('<script src="app/main.js?' + new Date().getTime() + '"><\/script>');
-        </script>
+        <script src="app/main.js?20240510"></script>
     </body>
 </html>
