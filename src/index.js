@@ -1,5 +1,7 @@
 import * as maplibregl from "maplibre-gl";
 import * as pmtiles from 'pmtiles';
+import MaplibreTerradrawControl from '@watergis/maplibre-gl-terradraw';
+import '@watergis/maplibre-gl-terradraw/dist/maplibre-gl-terradraw.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
 import '@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css';
@@ -53,12 +55,19 @@ const map = new maplibregl.Map({
     zoom: init_zoom,
     minZoom: 5,
     maxZoom: 21,
+    maxPitch: 85,
     maxBounds: [[110.0000, 25.0000],[170.0000, 50.0000]],
     bearing: init_bearing,
     pitch: init_pitch,
     attributionControl: true,
     hash: false
 });
+
+const drawControl = new MaplibreTerradrawControl({
+    modes: ['point', 'linestring', 'circle', 'select'],//'polygon', 'rectangle', 'angled-rectangle', 'freehand'
+    open: false,
+});
+map.addControl(drawControl, 'top-right');
 
 map.on('load', () => {
     map.addSource('basemap_GSIblank', {
@@ -88,10 +97,9 @@ map.on('load', () => {
     map.addSource('basemap_GSIhillshade', {
         'type': 'raster',
         'tiles': ['https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png'],
-        'tileSize': 512,
+        'tileSize': 256,
         'minzoom': 5,
-        'maxzoom': 16,
-        'attribution': '<a href="https://maps.gsi.go.jp/development/ichiran.html">地理院タイル</a>',
+        'maxzoom': 16
     });
     
     map.addSource('chibakun', {
@@ -149,7 +157,7 @@ map.on('load', () => {
         'layout': {
             },
             'paint': {
-                'fill-color': ["step", ["get", "color_flag"],'#fb9a99',1,'#555555',2,'#fff',3,'#555555',4,'#555555',5,'#fb9a99'],
+                'fill-color': ["step", ["get", "color_flag"],'#F62837',1,'#333333',2,'#fff',3,'#333333',4,'#333333',5,'#F62837'],//#fb9a99,#555555,#E64238
                 'fill-opacity': 0.8,
             }
     });
@@ -240,6 +248,15 @@ map.on('load', () => {
             'text-halo-color': '#fff',
             'text-halo-width': 1,
         }
+    });
+    map.setSky({
+        "sky-color": "#199EF3",
+        "sky-horizon-blend": 0.7,
+        "horizon-color": "#f0f8ff",
+        "horizon-fog-blend": 0.8,
+        "fog-color": "#2c7fb8",
+        "fog-ground-blend": 0.9,
+        "atmosphere-blend": ["interpolate",["linear"],["zoom"],0,1,12,0]
     });
     
     map.on('click', 'hexgrid-a', function (e) {
