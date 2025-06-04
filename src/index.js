@@ -116,7 +116,7 @@ map.on('load', () => {
         'type': 'geojson',
         'data': './app/data/station_chiba.geojson',
     });
-   
+    
     map.addLayer({
         'id': 'basemap-GSIblank',
         'type': 'raster',
@@ -155,11 +155,12 @@ map.on('load', () => {
         'source': 'chibakun',
         'source-layer': 'grid_chibakun',
         'layout': {
-            },
-            'paint': {
-                'fill-color': ["step", ["get", "color_flag"],'#F62837',1,'#333333',2,'#fff',3,'#333333',4,'#333333',5,'#F62837'],//#fb9a99,#555555,#E64238
-                'fill-opacity': 0.8,
-            }
+            'visibility': 'visible',
+        },
+        'paint': {
+            'fill-color': ["step", ["get", "color_flag"],'#F62837',1,'#333333',2,'#fff',3,'#333333',4,'#333333',5,'#F62837'],//#fb9a99,#555555,#E64238
+            'fill-opacity': 0.8
+        }
     });
     map.addLayer({
         'id': 'cityarea',
