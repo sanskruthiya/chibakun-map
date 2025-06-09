@@ -242,3 +242,27 @@ p.remarks {
     background-color: #f39c12;
     color: white;
 }
+
+.quiz-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #7f8c8d;
+}
+
+.quiz-loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 3px solid rgba(243, 156, 18, 0.3);
+    border-radius: 50%;
+    border-top-color: #f39c12;
+    animation: quiz-spinner 1s ease-in-out infinite;
+}
+
+@keyframes quiz-spinner {
+    to { transform: rotate(360deg); }
+}

@@ -505,19 +505,27 @@ document.getElementById('b_location').addEventListener('click', function () {
 // クイズ機能
 // クイズデータの読み込み
 function loadStationData() {
+    // ローディング表示
+    document.getElementById('quiz-question').innerHTML = '<div class="quiz-loading"><div class="quiz-loading-spinner"></div>データを読み込み中...</div>';
+    document.getElementById('quiz-result').innerHTML = '';
+    
     fetch('./app/data/quiz_chiba.geojson')
         .then(response => response.json())
         .then(data => {
             quizData = data.features;
             console.log(`クイズデータ ${quizData.length} 件を読み込みました`);
         })
-        .catch(error => console.error('クイズデータの読み込みエラー:', error));
+        .catch(error => {
+            console.error('クイズデータの読み込みエラー:', error);
+            document.getElementById('quiz-question').innerHTML = '<div class="quiz-loading">データの読み込みに失敗しました</div>';
+        });
 }
 
 // クイズの生成
 function generateQuiz() {
     if (quizData.length === 0) {
         console.error('クイズデータがありません');
+        document.getElementById('quiz-question').innerHTML = '<div class="quiz-loading">クイズデータがありません</div>';
         return;
     }
     
@@ -773,13 +781,18 @@ function toggleQuizMode() {
             map.setPaintProperty('hexgrid-a', 'fill-opacity', 1.0);
         }
         
+        // ローディング表示を初期表示
+        document.getElementById('quiz-question').innerHTML = '<div class="quiz-loading"><div class="quiz-loading-spinner"></div>クイズを準備中...</div>';
+        document.getElementById('quiz-result').innerHTML = '';
+        
         // クイズデータがなければ読み込む
         if (quizData.length === 0) {
             loadStationData();
             // データ読み込み後に少し待ってからクイズを生成
-            setTimeout(generateQuiz, 1000);
+            setTimeout(generateQuiz, 1500);
         } else {
-            generateQuiz();
+            // データがある場合も少し待つことでローディングアニメーションを見せる
+            setTimeout(generateQuiz, 800);
         }
     } else {
         // クイズモードを終了
