@@ -626,7 +626,7 @@ function generateQuiz() {
     
     // 固定の座標とズームレベルで表示
     map.flyTo({
-        center: [140.1992, 35.4895],
+        center: [140.32, 35.7],
         zoom: 8,
         essential: true
     });
@@ -696,7 +696,7 @@ function handleMarkerClick(marker, isCorrect, quizPoint) {
             if (index !== -1) {
                 marker.remove();
                 const newMarker = new maplibregl.Marker({
-                    color: '#e74c3c',
+                    color: '#7f8c8d',
                     scale: 0.8
                 })
                 .setLngLat(quizPoint.geometry.coordinates)
@@ -764,6 +764,14 @@ function toggleQuizMode() {
         map.setLayoutProperty('basemap-GSIhillshade', 'visibility', 'none');
         // セレクトボックスの選択も更新
         document.getElementById('basemap-id').selectedIndex = 4; // 背景地図なしの選択肢
+        
+        // チーバくんの不透明度を100%に設定
+        const sliderElement = document.getElementById('slider_color');
+        if (sliderElement) {
+            sliderElement.value = 10; // スライダーの値を10に設定
+            document.getElementById('slider_cValue').textContent = '100%';
+            map.setPaintProperty('hexgrid-a', 'fill-opacity', 1.0);
+        }
         
         // クイズデータがなければ読み込む
         if (quizData.length === 0) {
