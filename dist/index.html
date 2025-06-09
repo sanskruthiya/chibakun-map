@@ -26,8 +26,17 @@
             <button type="button" class="btnctrl" id="b_description">このマップ<br>について</button>
             <button type="button" class="btnctrl" id="b_setting">表示設定<br>メニュー</button>
             <button type="button" class="btnctrl" id="b_location">現在地を<br>ピン留め</button>
+            <button type="button" class="btnctrl" id="b_quiz">駅当て<br>クイズ</button>
         </div>
         <div id="description" class="map-overlay"></div>
+        <div id="quiz-container" class="map-overlay">
+            <div id="quiz-question"></div>
+            <div id="quiz-result"></div>
+            <div class="quiz-controls">
+                <button type="button" id="quiz-next" style="display:none;">次の問題</button>
+                <span id="quiz-record" style="display:none;">連続記録：0問</span>
+            </div>
+        </div>
         <div id="icon-loader"></div>
         <script src="app/main.js?20240928"></script>
     </body>

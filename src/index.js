@@ -40,6 +40,15 @@ bx_layer.innerHTML = '<div><label class="tLabel"><input type="checkbox" id="cbox
 const bx_setting = document.getElementById('bx-setting');
 bx_setting.innerHTML = '<div><input type="range" id="slider_color" min="0" max="10" value="8"><span id="slider_cValue">80%</span></div>'
 
+// クイズ機能用の変数
+let quizActive = false;
+let quizData = [];
+let currentQuiz = null;
+let quizMarkers = [];
+let correctMarker = null;
+let consecutiveCorrect = 0; // 連続正解数
+let bestRecord = 0; // 最高連続正解記録
+
 const init_coord = [140.1992, 35.4895];
 const init_zoom = 7.5;
 const init_bearing = 0;
@@ -261,6 +270,11 @@ map.on('load', () => {
     });
     
     map.on('click', 'hexgrid-a', function (e) {
+        // クイズモード中はポップアップを表示しない
+        if (quizActive) {
+            return;
+        }
+        
         let fquery_01 = map.queryRenderedFeatures(e.point, { layers: ['station'] })[0] !== undefined ? map.queryRenderedFeatures(e.point, { layers: ['station'] })[0].properties : "no-layer";
         let c_flag;
         if(e.features[0].properties.r_point == 1){
@@ -486,4 +500,265 @@ document.getElementById('b_location').addEventListener('click', function () {
             loc_options
         );
     }
+});
+
+// クイズ機能
+// クイズデータの読み込み
+function loadStationData() {
+    fetch('./app/data/quiz_chiba.geojson')
+        .then(response => response.json())
+        .then(data => {
+            quizData = data.features;
+            console.log(`クイズデータ ${quizData.length} 件を読み込みました`);
+        })
+        .catch(error => console.error('クイズデータの読み込みエラー:', error));
+}
+
+// クイズの生成
+function generateQuiz() {
+    if (quizData.length === 0) {
+        console.error('クイズデータがありません');
+        return;
+    }
+    
+    // 既存のマーカーをクリア
+    clearQuizMarkers();
+    
+    // ランダムにクイズポイントを選択
+    const correctIndex = Math.floor(Math.random() * quizData.length);
+    const correctQuizPoint = quizData[correctIndex];
+    
+    // 問題を設定
+    currentQuiz = {
+        point: correctQuizPoint,
+        answered: false
+    };
+    
+    // 問題文を表示
+    document.getElementById('quiz-question').textContent = 
+        `${correctQuizPoint.properties.name}の場所はどこ？`;
+    document.getElementById('quiz-result').textContent = '';
+    document.getElementById('quiz-result').className = '';
+    document.getElementById('quiz-next').style.display = 'none';
+    
+    // 不正解の選択肢を作成（重複なし）
+    const wrongOptions = [];
+    const usedIndices = new Set([correctIndex]);
+    
+    while (wrongOptions.length < 4) {
+        const randomIndex = Math.floor(Math.random() * quizData.length);
+        if (!usedIndices.has(randomIndex)) {
+            wrongOptions.push(quizData[randomIndex]);
+            usedIndices.add(randomIndex);
+        }
+    }
+    
+    // 全ての選択肢をシャッフル
+    const allOptions = [...wrongOptions, correctQuizPoint];
+    for (let i = allOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+    }
+    
+    // マーカーを作成
+    allOptions.forEach((quizPoint, index) => {
+        const isCorrect = quizPoint === correctQuizPoint;
+        const marker = new maplibregl.Marker({
+            color: '#3498db',
+            scale: 0.8
+        })
+        .setLngLat(quizPoint.geometry.coordinates)
+        .addTo(map);
+        
+        // マーカーにクリックイベントを追加
+        const markerElement = marker.getElement();
+        markerElement.classList.add('quiz-marker');
+        markerElement.addEventListener('click', () => handleMarkerClick(marker, isCorrect, quizPoint));
+        
+        quizMarkers.push(marker);
+        if (isCorrect) correctMarker = marker;
+    });
+    
+    // 地図の表示位置を調整
+    // 元のコード（選択肢に基づいて表示範囲を調整）
+    /*
+    const bounds = new maplibregl.LngLatBounds();
+    allOptions.forEach(quizPoint => {
+        bounds.extend(quizPoint.geometry.coordinates);
+    });
+    
+    map.fitBounds(bounds, { padding: 100 });
+    */
+    
+    // 固定の座標とズームレベルで表示
+    map.flyTo({
+        center: [140.1992, 35.4895],
+        zoom: 8,
+        essential: true
+    });
+}
+
+// マーカークリック時の処理
+function handleMarkerClick(marker, isCorrect, quizPoint) {
+    if (currentQuiz && !currentQuiz.answered) {
+        currentQuiz.answered = true;
+        const resultElement = document.getElementById('quiz-result');
+        
+        if (isCorrect) {
+            // 連続正解数をカウントアップ
+            consecutiveCorrect++;
+            
+            // 最高記録を更新
+            if (consecutiveCorrect > bestRecord) {
+                bestRecord = consecutiveCorrect;
+            }
+            
+            // 連続正解数に応じたメッセージを表示
+            const locationName = quizPoint.properties.name || '不明な場所';
+            const searchQuery = encodeURIComponent(`千葉県 ${locationName}`);
+            const googleLink = `<a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="quiz-info-link">詳しく調べる ↗</a>`;
+            
+            if (consecutiveCorrect >= 2) {
+                resultElement.innerHTML = `正解！${consecutiveCorrect}問連続正解だよ。<div>${googleLink}</div>`;
+            } else {
+                resultElement.innerHTML = `正解！<div>${googleLink}</div>`;
+            }
+            resultElement.className = 'quiz-correct';
+            
+            // 緑色のマーカーに置き換え
+            const index = quizMarkers.indexOf(marker);
+            if (index !== -1) {
+                marker.remove();
+                const newMarker = new maplibregl.Marker({
+                    color: '#2ecc71',
+                    scale: 0.8
+                })
+                .setLngLat(quizPoint.geometry.coordinates)
+                .addTo(map);
+                quizMarkers[index] = newMarker;
+            }
+        } else {
+            // 不正解の場合は連続正解数をリセット
+            consecutiveCorrect = 0;
+            
+            // データ構造をデバッグ出力
+            console.log('Quiz point object:', quizPoint);
+            
+            // 安全にプロパティにアクセス
+            let locationName = '不明な場所';
+            if (quizPoint && quizPoint.properties) {
+                locationName = quizPoint.properties.name || quizPoint.properties.name_alias || '不明な場所';
+            }
+            
+            // Google検索リンクを追加
+            const searchQuery = encodeURIComponent(`千葉県 ${locationName}`);
+            const googleLink = `<a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="quiz-info-link">詳しく調べる ↗</a>`;
+            
+            resultElement.innerHTML = `惜しい！そこ${locationName}だよ。<div>${googleLink}</div>`;
+            resultElement.className = 'quiz-incorrect';
+            
+            // 不正解のマーカーを赤色に置き換え
+            const index = quizMarkers.indexOf(marker);
+            if (index !== -1) {
+                marker.remove();
+                const newMarker = new maplibregl.Marker({
+                    color: '#e74c3c',
+                    scale: 0.8
+                })
+                .setLngLat(quizPoint.geometry.coordinates)
+                .addTo(map);
+                quizMarkers[index] = newMarker;
+            }
+            
+            // 正解のマーカーを緑色に置き換え
+            const correctIndex = quizMarkers.indexOf(correctMarker);
+            if (correctIndex !== -1) {
+                correctMarker.remove();
+                const newCorrectMarker = new maplibregl.Marker({
+                    color: '#2ecc71',
+                    scale: 0.8
+                })
+                .setLngLat(currentQuiz.point.geometry.coordinates)
+                .addTo(map);
+                quizMarkers[correctIndex] = newCorrectMarker;
+                correctMarker = newCorrectMarker;
+            }
+        }
+        
+        // 最高記録を表示
+        const recordElement = document.getElementById('quiz-record');
+        recordElement.textContent = `連続記録：${bestRecord}問`;
+        recordElement.style.display = 'inline';
+        
+        // 次の問題ボタンを表示
+        document.getElementById('quiz-next').style.display = 'block';
+    }
+}
+
+// マーカーをクリア
+function clearQuizMarkers() {
+    quizMarkers.forEach(marker => marker.remove());
+    quizMarkers = [];
+    correctMarker = null;
+}
+
+// クイズモードの切り替え
+function toggleQuizMode() {
+    quizActive = !quizActive;
+    
+    if (quizActive) {
+        // クイズモードをアクティブにする
+        document.getElementById('b_quiz').style.backgroundColor = '#e67e22';
+        document.getElementById('quiz-container').style.display = 'block';
+        document.getElementById('description').style.display = 'none';
+        document.getElementById('map-setting').style.display = 'none';
+        document.getElementById('b_description').style.backgroundColor = '#fff';
+        document.getElementById('b_description').style.color = '#333';
+        document.getElementById('b_setting').style.backgroundColor = '#fff';
+        document.getElementById('b_setting').style.color = '#333';
+        
+        // 検索ボックスを非表示にする
+        const geocoderContainer = document.querySelector('.maplibregl-ctrl-geocoder');
+        if (geocoderContainer) {
+            geocoderContainer.style.display = 'none';
+        }
+        
+        // 背景地図を非表示にする
+        map.setLayoutProperty('basemap-OSM', 'visibility', 'none');
+        map.setLayoutProperty('basemap-GSIphoto', 'visibility', 'none');
+        map.setLayoutProperty('basemap-GSIblank', 'visibility', 'none');
+        map.setLayoutProperty('basemap-GSIhillshade', 'visibility', 'none');
+        // セレクトボックスの選択も更新
+        document.getElementById('basemap-id').selectedIndex = 4; // 背景地図なしの選択肢
+        
+        // クイズデータがなければ読み込む
+        if (quizData.length === 0) {
+            loadStationData();
+            // データ読み込み後に少し待ってからクイズを生成
+            setTimeout(generateQuiz, 1000);
+        } else {
+            generateQuiz();
+        }
+    } else {
+        // クイズモードを終了
+        document.getElementById('b_quiz').style.backgroundColor = '#f39c12';
+        document.getElementById('quiz-container').style.display = 'none';
+        clearQuizMarkers();
+        
+        // 検索ボックスを再表示する
+        const geocoderContainer = document.querySelector('.maplibregl-ctrl-geocoder');
+        if (geocoderContainer) {
+            geocoderContainer.style.display = 'block';
+        }
+    }
+}
+
+// クイズボタンのイベントリスナー
+document.getElementById('b_quiz').addEventListener('click', function() {
+    toggleQuizMode();
+});
+
+// 次の問題ボタンのイベントリスナー
+document.getElementById('quiz-next').addEventListener('click', function() {
+    generateQuiz();
 });
