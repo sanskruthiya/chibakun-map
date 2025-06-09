@@ -541,10 +541,44 @@ function generateQuiz() {
     document.getElementById('quiz-result').className = '';
     document.getElementById('quiz-next').style.display = 'none';
     
-    // 不正解の選択肢を作成（重複なし）
+    // 不正解の選択肢を作成（異なる市町村から選択）
     const wrongOptions = [];
     const usedIndices = new Set([correctIndex]);
+    const usedCities = new Set();
     
+    // 正解の市町村を記録
+    if (correctQuizPoint.properties.city) {
+        usedCities.add(correctQuizPoint.properties.city);
+    }
+    
+    // まずは異なる市町村から選択を試みる
+    let attempts = 0;
+    const maxAttempts = 100; // 無限ループ防止
+    
+    while (wrongOptions.length < 4 && attempts < maxAttempts) {
+        attempts++;
+        const randomIndex = Math.floor(Math.random() * quizData.length);
+        const candidate = quizData[randomIndex];
+        
+        // 既に使用されているインデックスはスキップ
+        if (usedIndices.has(randomIndex)) continue;
+        
+        // 市町村情報がある場合は、異なる市町村から選択
+        if (candidate.properties.city) {
+            // 異なる市町村を優先、ただし十分な数の市町村がない場合は同じ市町村も許容
+            if (!usedCities.has(candidate.properties.city) || wrongOptions.length < 2) {
+                wrongOptions.push(candidate);
+                usedIndices.add(randomIndex);
+                usedCities.add(candidate.properties.city);
+            }
+        } else {
+            // 市町村情報がない場合はそのまま追加
+            wrongOptions.push(candidate);
+            usedIndices.add(randomIndex);
+        }
+    }
+    
+    // 必要な数の選択肢が集まらなかった場合、制約を緩めて追加
     while (wrongOptions.length < 4) {
         const randomIndex = Math.floor(Math.random() * quizData.length);
         if (!usedIndices.has(randomIndex)) {
