@@ -266,3 +266,140 @@ p.remarks {
 @keyframes quiz-spinner {
     to { transform: rotate(360deg); }
 }
+
+/* クイズ結果モーダル */
+.quiz-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.quiz-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.quiz-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.quiz-modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.quiz-modal-close {
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.quiz-modal-close:hover {
+    color: #f39c12;
+}
+
+.quiz-summary {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.quiz-summary p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.quiz-summary .highlight {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.quiz-history-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.quiz-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.quiz-history-item:last-child {
+    border-bottom: none;
+}
+
+.quiz-history-item .correct {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.quiz-history-item .incorrect {
+    color: #7f8c8d;
+}
+
+.quiz-result-link {
+    display: inline-block;
+    color: #3498db;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.quiz-result-link:hover {
+    color: #2980b9;
+}
+
+.quiz-reset-button {
+    display: block;
+    margin: 10px auto 0;
+    padding: 8px 15px;
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.quiz-reset-button:hover {
+    background-color: #e67e22;
+}

@@ -30,8 +30,8 @@ let descriptionContent = '';
 descriptionContent += '<h2>チーバくんの地図あわせマップ</h2>';
 descriptionContent += '<p class="tipstyle01">千葉県に住む不思議ないきもの、チーバくんの姿と千葉県の形を地図上にできるだけぴったり重ねたマップ。非公式ファンアートとなります。チーバくんと実際の地図の駅名や地名を照らし合わせたりできます。</p>';
 descriptionContent += '<p class="tipstyle01">ご意見等は<a href="https://form.run/@party--1681740493" target="_blank">問い合わせフォーム（外部サービス）</a>からお知らせください。</p>';
-descriptionContent += '<hr><p class="remarks">地図描画ライブラリ：<a href="https://maplibre.org/">MapLibre</a>.<br>ベースマップ：<a href="https://www.openstreetmap.org/">OpenStreetMap</a> | <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>.<br>位置参照情報 : <a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">国土交通省</a>と<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を独自に加工</p>';
-descriptionContent += '<hr><p class="remarks">View code on <a href="https://github.com/sanskruthiya/chibakun-map">Github</a></p>';
+descriptionContent += '<hr><p class="remarks">地図描画ライブラリ：<a href="https://maplibre.org/">MapLibre</a>.<br>ベースマップ：<a href="https://www.openstreetmap.org/">OpenStreetMap</a> | <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>.<br>位置参照情報 : <a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">国土交通省</a>と<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を独自に加工.<br>クイズ用データ : <a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a>の「観光資源」及び「駅別乗降客数」情報を独自に加工</p>';
+descriptionContent += '<hr><p class="remarks">View code on <a href="https://github.com/sanskruthiya/chibakun-map">GitHub</a></p>';
 descriptionBox.innerHTML = descriptionContent;
 
 const bx_layer = document.getElementById('bx-layer');
@@ -47,7 +47,10 @@ let currentQuiz = null;
 let quizMarkers = [];
 let correctMarker = null;
 let consecutiveCorrect = 0; // 連続正解数
-let bestRecord = 0; // 最高連続正解記録
+let bestRecord = 0; // 最高連続正解数
+let quizHistory = []; // クイズの履歴を保存する配列
+let totalQuizzes = 0; // 出題数
+let correctAnswers = 0; // 正解数
 
 const init_coord = [140.1992, 35.4895];
 const init_zoom = 7.5;
@@ -644,10 +647,22 @@ function generateQuiz() {
 function handleMarkerClick(marker, isCorrect, quizPoint) {
     if (currentQuiz && !currentQuiz.answered) {
         currentQuiz.answered = true;
+        totalQuizzes++; // 出題数をカウントアップ
+        
+        // クイズ履歴に記録
+        const locationName = quizPoint.properties.name || quizPoint.properties.name_alias || '不明な場所';
+        quizHistory.push({
+            question: currentQuiz.point.properties.name || '不明な場所',
+            answer: locationName,
+            isCorrect: isCorrect,
+            date: new Date()
+        });
+        
         const resultElement = document.getElementById('quiz-result');
         
         if (isCorrect) {
-            // 連続正解数をカウントアップ
+            // 正解数と連続正解数をカウントアップ
+            correctAnswers++;
             consecutiveCorrect++;
             
             // 最高記録を更新
@@ -696,7 +711,7 @@ function handleMarkerClick(marker, isCorrect, quizPoint) {
             const searchQuery = encodeURIComponent(`千葉県 ${locationName}`);
             const googleLink = `<a href="https://www.google.com/search?q=${searchQuery}" target="_blank" class="quiz-info-link">詳しく調べる ↗</a>`;
             
-            resultElement.innerHTML = `惜しい！そこ${locationName}だよ。<div>${googleLink}</div>`;
+            resultElement.innerHTML = `惜しい！そこは${locationName}だよ。<div>${googleLink}</div>`;
             resultElement.className = 'quiz-incorrect';
             
             // 不正解のマーカーを赤色に置き換え
@@ -727,10 +742,11 @@ function handleMarkerClick(marker, isCorrect, quizPoint) {
             }
         }
         
-        // 最高記録を表示
-        const recordElement = document.getElementById('quiz-record');
-        recordElement.textContent = `連続記録：${bestRecord}問`;
-        recordElement.style.display = 'inline';
+        // 結果出力リンクを表示
+        const resultLinkElement = document.getElementById('quiz-result-link');
+        if (resultLinkElement) {
+            resultLinkElement.style.display = 'inline-block';
+        }
         
         // 次の問題ボタンを表示
         document.getElementById('quiz-next').style.display = 'block';
@@ -817,3 +833,111 @@ document.getElementById('b_quiz').addEventListener('click', function() {
 document.getElementById('quiz-next').addEventListener('click', function() {
     generateQuiz();
 });
+
+// クイズ結果モーダルを表示
+// クイズ履歴をリセットする関数
+function resetQuizHistory() {
+    quizHistory = [];
+    totalQuizzes = 0;
+    correctAnswers = 0;
+    consecutiveCorrect = 0;
+    bestRecord = 0;
+    
+    // モーダルを閉じる
+    hideQuizResults();
+}
+
+function showQuizResults() {
+    // 結果概要の生成
+    const summaryElement = document.getElementById('quiz-summary');
+    const correctRate = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : 0;
+    
+    let summaryHTML = `
+        <p>出題数: <span class="highlight">${totalQuizzes}</span> 問</p>
+        <p>正解数: <span class="highlight">${correctAnswers}</span> 問</p>
+        <p>正答率: <span class="highlight">${correctRate}%</span></p>
+        <p>最高連続正解数: <span class="highlight">${bestRecord}</span> 問</p>
+        <button id="reset-quiz-history" class="quiz-reset-button">クイズ履歴をリセット</button>
+    `;
+    
+    summaryElement.innerHTML = summaryHTML;
+    
+    // リセットボタンのイベントリスナーを追加
+    const resetButton = document.getElementById('reset-quiz-history');
+    if (resetButton) {
+        // 既存のイベントリスナーを削除してから追加
+        resetButton.removeEventListener('click', resetQuizHistory);
+        resetButton.addEventListener('click', resetQuizHistory);
+    }
+    
+    // 履歴リストの生成
+    const historyListElement = document.getElementById('quiz-history-list');
+    historyListElement.innerHTML = '';
+    
+    // 最新の履歴から表示
+    const reversedHistory = [...quizHistory].reverse();
+    
+    reversedHistory.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'quiz-history-item';
+        
+        const questionSpan = document.createElement('span');
+        questionSpan.textContent = `${item.question}`;
+        
+        const resultSpan = document.createElement('span');
+        if (item.isCorrect) {
+            resultSpan.className = 'correct';
+            resultSpan.textContent = '○ 正解';
+        } else {
+            resultSpan.className = 'incorrect';
+            resultSpan.textContent = '✕ 不正解 (' + item.answer + ')';
+        }
+        
+        listItem.appendChild(questionSpan);
+        listItem.appendChild(resultSpan);
+        historyListElement.appendChild(listItem);
+    });
+    
+    // モーダルを表示
+    document.getElementById('quiz-modal').style.display = 'block';
+}
+
+// クイズ結果モーダルを非表示
+function hideQuizResults() {
+    document.getElementById('quiz-modal').style.display = 'none';
+}
+
+// クイズモードの初期化とイベントリスナーの設定
+function initQuizEvents() {
+    // 結果出力リンクのイベントリスナー
+    const resultLinkElement = document.getElementById('quiz-result-link');
+    if (resultLinkElement) {
+        resultLinkElement.removeEventListener('click', showQuizResults); // 重複防止
+        resultLinkElement.addEventListener('click', showQuizResults);
+    }
+    
+    // モーダルの閉じるボタンのイベントリスナー
+    const closeButton = document.querySelector('.quiz-modal-close');
+    if (closeButton) {
+        closeButton.removeEventListener('click', hideQuizResults); // 重複防止
+        closeButton.addEventListener('click', hideQuizResults);
+    }
+}
+
+// ページ読み込み完了時にイベントリスナーを設定
+document.addEventListener('DOMContentLoaded', function() {
+    initQuizEvents();
+    
+    // モーダルの外側をクリックしたときに閉じる
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('quiz-modal');
+        if (event.target === modal) {
+            hideQuizResults();
+        }
+    });
+});
+
+// 万一、ページが既に読み込まれている場合のフォールバック
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initQuizEvents, 100);
+}

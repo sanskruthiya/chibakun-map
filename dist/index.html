@@ -34,10 +34,27 @@
             <div id="quiz-result"></div>
             <div class="quiz-controls">
                 <button type="button" id="quiz-next" style="display:none;">次の問題</button>
-                <span id="quiz-record" style="display:none;">連続記録：0問</span>
+                <span id="quiz-result-link" class="quiz-result-link" style="display:none;">結果を出力する</span>
             </div>
         </div>
         <div id="icon-loader"></div>
+        
+        <!-- クイズ結果モーダル -->
+        <div id="quiz-modal" class="quiz-modal">
+            <div class="quiz-modal-content">
+                <div class="quiz-modal-header">
+                    <h3>クイズ結果レポート</h3>
+                    <span class="quiz-modal-close">&times;</span>
+                </div>
+                <div class="quiz-summary" id="quiz-summary">
+                    <!-- 結果概要がここに入ります -->
+                </div>
+                <ul class="quiz-history-list" id="quiz-history-list">
+                    <!-- クイズの履歴がここに入ります -->
+                </ul>
+            </div>
+        </div>
+        
         <script src="app/main.js?20240928"></script>
     </body>
 </html>
