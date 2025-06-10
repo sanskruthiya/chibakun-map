@@ -27,11 +27,18 @@ const selected_basemap = document.querySelector('.basemap-select');
 
 const descriptionBox = document.getElementById('description');
 let descriptionContent = '';
-descriptionContent += '<h2>チーバくんの地図あわせマップ</h2>';
-descriptionContent += '<p class="tipstyle01">千葉県に住む不思議ないきもの、チーバくんの姿と千葉県の形を地図上にできるだけぴったり重ねたマップ。非公式ファンアートとなります。チーバくんと実際の地図の駅名や地名を照らし合わせたりできます。</p>';
-descriptionContent += '<p class="tipstyle01">ご意見等は<a href="https://form.run/@party--1681740493" target="_blank">問い合わせフォーム（外部サービス）</a>からお知らせください。</p>';
-descriptionContent += '<hr><p class="remarks">地図描画ライブラリ：<a href="https://maplibre.org/">MapLibre</a>.<br>ベースマップ：<a href="https://www.openstreetmap.org/">OpenStreetMap</a> | <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>.<br>位置参照情報 : <a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">国土交通省</a>と<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を独自に加工.<br>クイズ用データ : <a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a>の「観光資源」及び「駅別乗降客数」情報を独自に加工</p>';
-descriptionContent += '<hr><p class="remarks">View code on <a href="https://github.com/sanskruthiya/chibakun-map">GitHub</a></p>';
+descriptionContent += '<div class="description-content">';
+descriptionContent += '  <div class="description-header">';
+descriptionContent += '    <h2>チーバくんの地図あわせマップ</h2>';
+descriptionContent += '    <span class="description-close" id="description-close">&times;</span>';
+descriptionContent += '  </div>';
+descriptionContent += '  <div class="description-body">';
+descriptionContent += '    <p class="tipstyle01">千葉県に住む不思議ないきもの、チーバくんの姿と千葉県の形を地図上にできるだけぴったり重ねたマップ。非公式ファンアートとなります。チーバくんと実際の地図の駅名や地名を照らし合わせたりできます。</p>';
+descriptionContent += '    <p class="tipstyle01">ご意見等は<a href="https://form.run/@party--1681740493" target="_blank">問い合わせフォーム（外部サービス）</a>からお知らせください。</p>';
+descriptionContent += '    <hr><p class="remarks">地図描画ライブラリ：<a href="https://maplibre.org/">MapLibre</a>.<br>ベースマップ：<a href="https://www.openstreetmap.org/">OpenStreetMap</a> | <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>.<br>位置参照情報 : <a href="https://nlftp.mlit.go.jp/cgi-bin/isj/dls/_choose_method.cgi">国土交通省</a>と<a href="https://www.pref.chiba.lg.jp/index.html">千葉県</a>の情報を独自に加工.<br>クイズ用データ : <a href="https://nlftp.mlit.go.jp/ksj/">国土数値情報</a>の「観光資源」及び「駅別乗降客数」情報を独自に加工</p>';
+descriptionContent += '    <hr><p class="remarks">View code on <a href="https://github.com/sanskruthiya/chibakun-map">GitHub</a></p>';
+descriptionContent += '  </div>';
+descriptionContent += '</div>';
 descriptionBox.innerHTML = descriptionContent;
 
 const bx_layer = document.getElementById('bx-layer');
@@ -346,42 +353,61 @@ map.on('load', () => {
     });
 });
 
-document.getElementById('b_description').style.backgroundColor = "#fff";
-document.getElementById('b_description').style.color = "#333";
-document.getElementById('description').style.display ="none";
+// 各モードの状態を追跡する変数
+let settingActive = true; // 初期状態では表示設定メニューが開いている
 
-document.getElementById('b_setting').style.backgroundColor = "#2c7fb8";
-document.getElementById('b_setting').style.color = "#fff";
-document.getElementById('map-setting').style.display ="block";
+// 初期状態の設定
+document.getElementById('description').style.display = "none";
+document.getElementById('map-setting').style.display = "block";
 
-document.getElementById('b_location').style.backgroundColor = "#fff";
-document.getElementById('b_location').style.color = "#333";
+// 「このマップについて」の閉じるボタンのイベントリスナー
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('description-close').addEventListener('click', function() {
+        document.getElementById('description').style.display = 'none';
+        setActiveButton(null); // アクティブ状態を解除
+    });
+    
+    // モーダルの外側をクリックしたときに閉じる
+    document.getElementById('description').addEventListener('click', function(event) {
+        if (event.target === this) {
+            this.style.display = 'none';
+            setActiveButton(null);
+        }
+    });
+});
 
+// 表示設定ボタンをアクティブにする
+setActiveButton('b_setting');
+
+// 「このマップについて」ボタンのイベントリスナー
 document.getElementById('b_description').addEventListener('click', function () {
-    const visibility = document.getElementById('description');
-    if (visibility.style.display == 'block') {
-        visibility.style.display = 'none';
-        this.style.backgroundColor = "#fff";
-        this.style.color = "#555"
+    const modal = document.getElementById('description');
+    if (modal.style.display == 'block') {
+        // モーダルを非表示にする
+        modal.style.display = 'none';
+        setActiveButton(null); // アクティブ状態を解除
     }
     else {
-        visibility.style.display = 'block';
-        this.style.backgroundColor = "#2c7fb8";
-        this.style.color = "#fff";
+        // モーダルを表示する
+        modal.style.display = 'block';
+        setActiveButton('b_description'); // このボタンをアクティブに
     }
 });
 
 document.getElementById('b_setting').addEventListener('click', function () {
     const visibility = document.getElementById('map-setting');
     if (visibility.style.display == 'block') {
+        // 設定を非表示にする
         visibility.style.display = 'none';
-        this.style.backgroundColor = "#fff";
-        this.style.color = "#555"
+        settingActive = false; // 表示設定メニューの状態を更新
+        setActiveButton(null); // アクティブ状態を解除
     }
     else {
+        // 設定を表示する
         visibility.style.display = 'block';
-        this.style.backgroundColor = "#2c7fb8";
-        this.style.color = "#fff";
+        document.getElementById('description').style.display = 'none';
+        settingActive = true; // 表示設定メニューの状態を更新
+        setActiveButton('b_setting'); // このボタンをアクティブに
     }
 });
 
@@ -760,20 +786,38 @@ function clearQuizMarkers() {
     correctMarker = null;
 }
 
+// ボタンのアクティブ状態を管理する関数
+function setActiveButton(buttonId) {
+    // すべてのボタンからactiveクラスを削除
+    const buttons = document.querySelectorAll('#buttons button');
+    buttons.forEach(button => {
+        // クイズモードがアクティブな場合は、クイズボタンのアクティブ状態を維持
+        if (quizActive && button.id === 'b_quiz') {
+            return; // クイズボタンの状態は変更しない
+        }
+        // 表示設定メニューがアクティブな場合は、表示設定ボタンのアクティブ状態を維持
+        if (settingActive && button.id === 'b_setting') {
+            return; // 表示設定ボタンの状態は変更しない
+        }
+        button.classList.remove('active');
+    });
+    
+    // 指定されたボタンにactiveクラスを追加
+    if (buttonId) {
+        document.getElementById(buttonId).classList.add('active');
+    }
+}
+
 // クイズモードの切り替え
 function toggleQuizMode() {
     quizActive = !quizActive;
     
     if (quizActive) {
         // クイズモードをアクティブにする
-        document.getElementById('b_quiz').style.backgroundColor = '#e67e22';
+        setActiveButton('b_quiz'); // クイズボタンをアクティブに
         document.getElementById('quiz-container').style.display = 'block';
         document.getElementById('description').style.display = 'none';
         document.getElementById('map-setting').style.display = 'none';
-        document.getElementById('b_description').style.backgroundColor = '#fff';
-        document.getElementById('b_description').style.color = '#333';
-        document.getElementById('b_setting').style.backgroundColor = '#fff';
-        document.getElementById('b_setting').style.color = '#333';
         
         // 検索ボックスを非表示にする
         const geocoderContainer = document.querySelector('.maplibregl-ctrl-geocoder');
@@ -812,7 +856,7 @@ function toggleQuizMode() {
         }
     } else {
         // クイズモードを終了
-        document.getElementById('b_quiz').style.backgroundColor = '#f39c12';
+        setActiveButton(null); // ボタンのアクティブ状態を解除
         document.getElementById('quiz-container').style.display = 'none';
         clearQuizMarkers();
         
