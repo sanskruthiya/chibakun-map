@@ -206,6 +206,15 @@ p.remarks {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) inset;
 }
 
+/* 非アクティブ状態（無効化）のボタン */
+#buttons>button.disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    pointer-events: none;
+}
+
 #icon-loader {
     position: absolute;
     top: 50%;

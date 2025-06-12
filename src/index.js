@@ -819,6 +819,11 @@ function toggleQuizMode() {
         document.getElementById('description').style.display = 'none';
         document.getElementById('map-setting').style.display = 'none';
         
+        // 表示設定ボタンを非アクティブ化（灰色表示）
+        const settingButton = document.getElementById('b_setting');
+        settingButton.classList.add('disabled');
+        settingActive = false; // 表示設定の状態を非アクティブに
+        
         // 検索ボックスを非表示にする
         const geocoderContainer = document.querySelector('.maplibregl-ctrl-geocoder');
         if (geocoderContainer) {
@@ -859,6 +864,13 @@ function toggleQuizMode() {
         setActiveButton(null); // ボタンのアクティブ状態を解除
         document.getElementById('quiz-container').style.display = 'none';
         clearQuizMarkers();
+        
+        // 表示設定ボタンを再度アクティブ化
+        const settingButton = document.getElementById('b_setting');
+        settingButton.classList.remove('disabled');
+        // 表示設定は非表示のままにする
+        document.getElementById('map-setting').style.display = 'none';
+        settingActive = false; // 表示設定の状態を非アクティブに
         
         // 検索ボックスを再表示する
         const geocoderContainer = document.querySelector('.maplibregl-ctrl-geocoder');
@@ -934,7 +946,8 @@ function showQuizResults() {
             resultSpan.textContent = '○ 正解';
         } else {
             resultSpan.className = 'incorrect';
-            resultSpan.textContent = '✕ 不正解 (' + item.answer + ')';
+            //resultSpan.textContent = '✕ 不正解 (' + item.answer + ')';
+            resultSpan.textContent = '✕ 不正解';
         }
         
         listItem.appendChild(questionSpan);
